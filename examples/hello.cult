@@ -1,0 +1,36 @@
+(require "file:dll.cult")
+(require "builtin:cult/yoga")
+
+(define root (yoga/Node))
+(yoga/style/width root 500.0f32)
+(yoga/style/height root 300.0f32)
+(yoga/style/justify-content root yoga/Justify/Center)
+
+(define node1 (yoga/Node))
+(yoga/style/width node1 100.0f32)
+(yoga/style/height node1 100.0f32)
+
+(define node2 (yoga/Node))
+(yoga/style/width node2 100.0f32)
+(yoga/style/height node2 100.0f32)
+
+(yoga/Node/insert root node1 0u32)
+(yoga/Node/insert root node2 1u32)
+
+(yoga/layout root 500.0f32 300.0f32 yoga/Direction/LTR)
+
+
+(define print-layout (function (node)
+    (do
+        (format "left:%{0} top:%{1} width:%{2} height:%{3}" 
+            (yoga/layout/left node)
+            (yoga/layout/top node)
+            (yoga/layout/width node)
+            (yoga/layout/height node)
+        )
+    )
+))
+
+(print (print-layout root))
+(print (print-layout node1))
+(print (print-layout node2))
