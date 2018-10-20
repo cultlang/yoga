@@ -5,6 +5,7 @@
 (yoga/style/width root 500.0f32)
 (yoga/style/height root 300.0f32)
 (yoga/style/justify-content root yoga/Justify/Center)
+(yoga/style/flex-direction root yoga/FlexDirection/Row)
 
 (define node1 (yoga/Node))
 (yoga/style/width node1 100.0f32)
