@@ -155,16 +155,45 @@ void cultlang::yoga::make_bindings(craft::instance<craft::lisp::Module> ret)
 	lC(MoD"/Wrap/WrapReverse", t_u32::make(YGWrapWrapReverse));
 
 	//Nodes
-	lMM(MoD"/Node", []() {
+	lMM(MoD"/Size", [](t_f32 x, t_f32 y) {
+		auto res = instance<YGSize>::make();res->width = *x;res->height = *y;
+		return res;
+	});
+	lMM(MoD"/Size/width", [](instance<YGSize> f) { return t_f32::make(f->width);});
+	lMM(MoD"/Size/height", [](instance<YGSize> f) { return t_f32::make(f->height);});
+
+	lMM(MoD"/Node", []() {return t_node::makeFromPointerAndMemoryManager(YGNodeNew(), 
+		+[](void* f) {YGNodeFree((YGNodeRef)f);});});
+
+	lMM(MoD"/Node", [](instance<PSubroutine> measure) {
+		measure.incref();
 		auto res = YGNodeNew();
-		return t_node::makeFromPointerAndMemoryManager(res, +[](void* f){YGNodeFree((YGNodeRef)f);});
+		YGNodeSetContext(res, measure.asInternalPointer());
+		YGNodeSetMeasureFunc(res, [](YGNodeRef node, float width, YGMeasureMode widthMode, float height, YGMeasureMode heightMode) {
+			auto measure = instance<PSubroutine>::fromInternalPointer(YGNodeGetContext(node));
+			auto res = measure->execute(measure, {
+				t_node::makeFromPointerAndMemoryManager(node, node),
+				t_f32::make(width),
+				t_u32::make(widthMode),
+				t_f32::make(height),
+				t_u32::make(heightMode),
+			});
+			return *res.asType<YGSize>();
+		});
+		t_node::makeFromPointerAndMemoryManager(YGNodeNew(), +[](void* f) {
+			auto ref = (YGNodeRef)f;
+			auto measure = instance<PSubroutine>::fromInternalPointer(YGNodeGetContext(ref));
+			measure.decref();
+			YGNodeFree(ref);
+		});
 	});
 	lMM(MoD"/Node/free", [](t_node s) {
+		
 		return YGNodeFree(s.get());
 	});
-	lMM(MoD"/Node/free", [](t_node s) {
-		return YGNodeFreeRecursive(s.get());
-	});
+	// lMM(MoD"/Node/free", [](t_node s) {
+	// 	return YGNodeFreeRecursive(s.get());
+	// });
 	lMM(MoD"/Node/clone", [](t_node f) {
 		return t_node::makeFromPointerAndMemoryManager(f.get(), 0);
 	});
@@ -173,6 +202,7 @@ void cultlang::yoga::make_bindings(craft::instance<craft::lisp::Module> ret)
 
 	lMM(MoD"/Node/insert", [](t_node p, t_node c, t_u32 i) {
 		c.incref();
+		
 		YGNodeInsertChild(p.get(), c.get(), *i);
 	});
 	lMM(MoD"/Node/remove", [](t_node p, t_node c) {
