@@ -338,7 +338,7 @@ void cultlang::yoga::make_bindings(craft::instance<craft::lisp::Module> ret)
 	lMM(MoD"/layout/padding", [](t_node p, t_u32 e) {YGNodeLayoutGetPadding(p.get(), YGEdge(*e));});
 }
 
-BuiltinModuleDescription cultlang::yoga::BuiltinYoga("cult/yoga", cultlang::yoga::make_bindings);
+BuiltinModuleDescription cultlang::yoga::BuiltinYoga("extensions/yoga", cultlang::yoga::make_bindings);
 
 
 #include "types/dll_entry.inc"
